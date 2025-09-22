@@ -1,10 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <!-- මේකෙන් document එකේ character encoding එක define කරනවා. (Unicode) -->
   <meta charset="UTF-8">
+  <!-- මේකෙන් web page එක mobile devices වලට adapt වෙන විදිය define කරනවා. -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Brain Cancer Detector</title>
+  <!-- මේ section එකෙන් තමයි web page එකේ පෙනුම (styling) පාලනය කරන්නේ. -->
   <style>
+    /* Body එකේ design එක. Font, background color, alignments වගේ දේවල් */
     body {
       margin: 0;
       font-family: 'Inter', sans-serif;
@@ -16,6 +20,7 @@
       min-height: 100vh;
       padding: 24px;
     }
+    /* මේක glass effect එක හදන්න භාවිතා කරන class එක. */
     .glass {
       background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(16px);
@@ -24,6 +29,7 @@
       border-radius: 24px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.6);
     }
+    /* ප්‍රධාන මාතෘකාව (title) */
     .title {
       font-size: 2.5rem;
       font-weight: 800;
@@ -33,12 +39,14 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
+    /* උප මාතෘකාව (subtitle) */
     .subtitle {
       text-align: center;
       color: #94a3b8;
       margin-bottom: 40px;
       font-size: 0.95rem;
     }
+    /* Upload සහ Prediction කොටස් දෙක. */
     .section {
       flex: 1;
       border-radius: 16px;
@@ -47,6 +55,7 @@
       background: rgba(17, 24, 39, 0.6);
       box-shadow: 0 6px 20px rgba(0,0,0,0.5);
     }
+    /* Image upload box එක. */
     .upload-box {
       display: flex;
       align-items: center;
@@ -62,12 +71,14 @@
     .upload-box:hover {
       border-color: #3b82f6;
     }
+    /* "Select an image file" text එක. */
     .placeholder {
       position: absolute;
       color: #64748b;
       font-size: 0.85rem;
       text-align: center;
     }
+    /* "Analyze Image" button එක. */
     .upload-btn {
       margin-top: 20px;
       width: 100%;
@@ -85,6 +96,7 @@
       transform: scale(1.05);
       background: linear-gradient(to right, #1d4ed8, #7e22ce);
     }
+    /* ප්‍රතිඵල (prediction result) පෙන්වන card එක. */
     .result-card {
       background: linear-gradient(to right, rgba(31,41,55,0.6), rgba(17,24,39,0.6));
       padding: 20px;
@@ -100,6 +112,7 @@
       font-size: 1.5rem;
       font-weight: 800;
     }
+    /* Loading icon එක. */
     .loader {
       border: 4px solid #475569;
       border-top: 4px solid #3b82f6;
@@ -109,9 +122,11 @@
       animation: spin 1s linear infinite;
       margin-bottom: 12px;
     }
+    /* Loading animation එක හදනවා. */
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+    /* Error message box එක. */
     .msg-box {
       background: rgba(120,53,15,0.8);
       border: 1px solid #f59e0b;
@@ -121,6 +136,7 @@
       color: #fef3c7;
       display: none;
     }
+    /* Mobile සහ desktop screen sizes වලට layout එක හදනවා. */
     .layout {
       display: flex;
       flex-direction: column;
@@ -132,12 +148,14 @@
   </style>
 </head>
 <body>
+  <!-- ප්‍රධාන glass container එක. -->
   <div class="glass" style="max-width: 960px; width: 100%; padding: 48px;">
+    <!-- Title සහ subtitle -->
     <h1 class="title">Brain Cancer Detector</h1>
     <p class="subtitle">Upload a brain MRI scan to receive a preliminary AI diagnosis.</p>
 
     <div class="layout">
-      <!-- Upload Section -->
+      <!-- Image upload කරන කොටස -->
       <div class="section">
         <h3 style="text-align:center; font-size:1.25rem; font-weight:600; margin-bottom:16px;">Upload Scan</h3>
         <div class="upload-box">
@@ -151,7 +169,7 @@
         <button class="upload-btn" onclick="uploadImage()">Analyze Image</button>
       </div>
 
-      <!-- Prediction Section -->
+      <!-- Prediction results පෙන්වන කොටස. මුලින්ම මේක හංගලා තියෙන්නේ. -->
       <div id="prediction-result" class="section" style="display:none;">
         <h3 style="text-align:center; font-size:1.25rem; font-weight:600; margin-bottom:16px;">Prediction Result</h3>
         <div id="loading" style="display:none; height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8;">
@@ -173,7 +191,9 @@
     </div>
   </div>
 
+<!-- මේ section එකෙන් තමයි JavaScript code එක තියෙන්නේ. මේකෙන් page එකේ functionality පාලනය කරනවා. -->
 <script>
+  // Image එක select කරාම preview එක පෙන්නන function එක.
   function previewImage() {
     const fileInput = document.getElementById('file-input');
     const preview = document.getElementById('image-preview');
@@ -194,6 +214,7 @@
     }
   }
 
+  // Error message box එක පෙන්නන function එක.
   function showMessageBox(message) {
     const msgBox = document.getElementById('message-box');
     msgBox.textContent = message;
@@ -201,10 +222,12 @@
     setTimeout(() => msgBox.style.display = "none", 5000);
   }
 
+  // Image එක upload කරලා prediction එක ගන්න function එක.
   async function uploadImage() {
     const fileInput = document.getElementById('file-input');
     const file = fileInput.files[0];
 
+    // File එකක් select කරලා නැත්නම් message එකක් පෙන්නනවා.
     if (!file) {
       showMessageBox('Please select a file first.');
       return;
@@ -217,11 +240,13 @@
     const loadingDiv = document.getElementById('loading');
     const resultContent = document.getElementById('result-content');
 
+    // loading animations පටන් ගන්නවා.
     resultContainer.style.display = "block";
     resultContent.style.display = "none";
     loadingDiv.style.display = "flex";
 
     try {
+      // Flask server එකට request එක යවනවා.
       const response = await fetch("http://127.0.0.1:5000/predict", {
         method: 'POST',
         body: formData,
@@ -229,19 +254,23 @@
 
       const data = await response.json();
       if (response.ok) {
+        // Prediction එක display කරනවා.
         document.getElementById('diagnosis-name').textContent = data.prediction;
         document.getElementById('confidence').textContent =
           (parseFloat(data.confidence) * 100).toFixed(2) + '%';
         resultContent.style.display = "block";
       } else {
+        // Error එකක් ආවොත් message box එකේ පෙන්නනවා.
         showMessageBox('Error: ' + (data.error || 'Unknown error occurred.'));
         resultContainer.style.display = "none";
       }
     } catch (error) {
+      // Network error එකක් ආවොත් message box එකේ පෙන්නනවා.
       console.error('Network or server error:', error);
       showMessageBox('Could not connect to the server. Please check if the server is running.');
       resultContainer.style.display = "none";
     } finally {
+      // loading animations නවත්වනවා.
       loadingDiv.style.display = "none";
     }
   }
