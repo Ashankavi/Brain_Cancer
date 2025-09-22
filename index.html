@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brain Cancer Detector</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at top, #1e293b, #0f172a);
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 24px;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+    }
+    .title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      text-align: center;
+      margin-bottom: 10px;
+      background: linear-gradient(to right, #3b82f6, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      text-align: center;
+      color: #94a3b8;
+      margin-bottom: 40px;
+      font-size: 0.95rem;
+    }
+    .section {
+      flex: 1;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(17, 24, 39, 0.6);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    }
+    .upload-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 220px;
+      border: 2px dashed #475569;
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border 0.3s ease;
+    }
+    .upload-box:hover {
+      border-color: #3b82f6;
+    }
+    .placeholder {
+      position: absolute;
+      color: #64748b;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .upload-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 14px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      background: linear-gradient(to right, #2563eb, #9333ea);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, background 0.3s ease;
+    }
+    .upload-btn:hover {
+      transform: scale(1.05);
+      background: linear-gradient(to right, #1d4ed8, #7e22ce);
+    }
+    .result-card {
+      background: linear-gradient(to right, rgba(31,41,55,0.6), rgba(17,24,39,0.6));
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+    .result-label {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-bottom: 4px;
+    }
+    .result-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+    }
+    .loader {
+      border: 4px solid #475569;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 48px;
+      height: 48px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 12px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .msg-box {
+      background: rgba(120,53,15,0.8);
+      border: 1px solid #f59e0b;
+      padding: 10px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      color: #fef3c7;
+      display: none;
+    }
+    .layout {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    @media(min-width: 768px) {
+      .layout { flex-direction: row; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glass" style="max-width: 960px; width: 100%; padding: 48px;">
+    <h1 class="title">Brain Cancer Detector</h1>
+    <p class="subtitle">Upload a brain MRI scan to receive a preliminary AI diagnosis.</p>
+
+    <div class="layout">
+      <!-- Upload Section -->
+      <div class="section">
+        <h3 style="text-align:center; font-size:1.25rem; font-weight:600; margin-bottom:16px;">Upload Scan</h3>
+        <div class="upload-box">
+          <p id="placeholder-text" class="placeholder">Select an image file.</p>
+          <img id="image-preview" src="#" alt="Image Preview"
+               style="max-height:100%; max-width:100%; object-fit:contain; visibility:hidden; transition: transform 0.5s ease;">
+          <input type="file" id="file-input"
+                 style="position:absolute; inset:0; opacity:0; cursor:pointer;"
+                 accept="image/*" onchange="previewImage()">
+        </div>
+        <button class="upload-btn" onclick="uploadImage()">Analyze Image</button>
+      </div>
+
+      <!-- Prediction Section -->
+      <div id="prediction-result" class="section" style="display:none;">
+        <h3 style="text-align:center; font-size:1.25rem; font-weight:600; margin-bottom:16px;">Prediction Result</h3>
+        <div id="loading" style="display:none; height:220px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#94a3b8;">
+          <div class="loader"></div>
+          <p>Analyzing...</p>
+        </div>
+        <div id="result-content" style="display:none;">
+          <div class="result-card">
+            <p class="result-label">Diagnosis</p>
+            <p id="diagnosis-name" class="result-value" style="color:#3b82f6;"></p>
+          </div>
+          <div class="result-card">
+            <p class="result-label">Confidence</p>
+            <p id="confidence" class="result-value" style="color:#9333ea;"></p>
+          </div>
+          <p id="message-box" class="msg-box"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function previewImage() {
+    const fileInput = document.getElementById('file-input');
+    const preview = document.getElementById('image-preview');
+    const placeholder = document.getElementById('placeholder-text');
+
+    if (fileInput.files && fileInput.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        preview.src = e.target.result;
+        preview.style.visibility = "visible";
+        placeholder.style.display = "none";
+      }
+      reader.readAsDataURL(fileInput.files[0]);
+    } else {
+      preview.src = '#';
+      preview.style.visibility = "hidden";
+      placeholder.style.display = "block";
+    }
+  }
+
+  function showMessageBox(message) {
+    const msgBox = document.getElementById('message-box');
+    msgBox.textContent = message;
+    msgBox.style.display = "block";
+    setTimeout(() => msgBox.style.display = "none", 5000);
+  }
+
+  async function uploadImage() {
+    const fileInput = document.getElementById('file-input');
+    const file = fileInput.files[0];
+
+    if (!file) {
+      showMessageBox('Please select a file first.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const resultContainer = document.getElementById('prediction-result');
+    const loadingDiv = document.getElementById('loading');
+    const resultContent = document.getElementById('result-content');
+
+    resultContainer.style.display = "block";
+    resultContent.style.display = "none";
+    loadingDiv.style.display = "flex";
+
+    try {
+      const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        document.getElementById('diagnosis-name').textContent = data.prediction;
+        document.getElementById('confidence').textContent =
+          (parseFloat(data.confidence) * 100).toFixed(2) + '%';
+        resultContent.style.display = "block";
+      } else {
+        showMessageBox('Error: ' + (data.error || 'Unknown error occurred.'));
+        resultContainer.style.display = "none";
+      }
+    } catch (error) {
+      console.error('Network or server error:', error);
+      showMessageBox('Could not connect to the server. Please check if the server is running.');
+      resultContainer.style.display = "none";
+    } finally {
+      loadingDiv.style.display = "none";
+    }
+  }
+</script>
+</body>
+</html>
